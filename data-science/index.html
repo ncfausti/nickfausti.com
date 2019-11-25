@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Data Science Courses | Nick Fausti</title>
+
+		<!-- Jquery + Bootstrap from CDNs-->
+		<link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+		<style>
+		
+		/* Override bootstrap styles here */
+		body { padding: 18px; }
+		.course { 
+			padding-bottom: 18px;
+			border-bottom: 3px dotted #eee;
+		}
+		</style>
+
+		<script>
+
+		$(function() {
+		    // Document.ready code here
+		});
+		</script>
+
+	</head>
+	<body>
+		<div class="content">
+		<div class="course" id="data-structures-algorithms">
+		<h2>Problem Solving w/Algorithms and Data Structures</h2>
+		<a href="http://interactivepython.org/runestone/static/pythonds/index.html" target="_blank">Course home</a>
+		<div class="thought">
+		<h4>How Fast (or slow) is an Algorithm?</h4>
+		<strong>Big O</strong> notation always sounds scary at first. Really, it's just a way to specify how the time it takes for an algorithm to complete is affected by the input size of the data you're working with. For example, if I wanted to add 100 different numbers and it takes time t, how will t be affected if I wanted to add 10,000 different numbers, or 1,000,000 etc. <strong>O</strong> just stands for <em>Order of Magnitude</em>. We use the largest order of magnitude to define the time complexity of an algorithm because all of the smaller magnitudes are inconsequential.
+		<br>
+		<br>
+		<table class="table">
+			<thead>
+				<th>f(n)</th>
+				<th>Name</th>
+			</thead>
+			<tbody>
+				<tr>
+					<td>1</td>
+					<td>Constant</td>
+				</tr>
+				<tr>
+					<td>log <em>n</em></td>
+					<td>Logarithmic</td>
+				</tr>
+				<tr>
+					<td><em>n</em></td>
+					<td>Linear</td>
+				</tr>
+				<tr>
+					<td>Log Linear</td>
+					<td><em>n</em> log <em>n</em></td>
+				</tr>
+				<tr>
+					<td><em>n</em>^2</td>
+					<td>Quadratics</td>
+				</tr>
+				<tr>
+					<td><em>n</em>^3</td>
+					<td>Cubic</td>
+				</tr>
+				<tr>
+					<td>2^<em>n</em></td>
+					<td>Exponential</td>
+				</tr>
+			</tbody>
+		</table>
+
+		</div>
+		</div>
+
+			<div class="course" id="intro-data-science">
+				<h2>Intro. to Data Science - University of Washington</h2>
+				<a href="https://class.coursera.org/datasci-002/">Course home</a>
+				<div class="thought">
+					<h3>What is Linear Regression?</h3>
+					
+					<a href="https://www.youtube.com/watch?v=0T0z8d0_aY4">Linear Regression</a> is about fitting a line to a plot of points.
+					<br>
+					<h4>Least Squares</h4>
+					<img src="least-squares.png" />
+					<br>
+					To find the linear regression of a set of x,y points we can go through the above calculations by hand, or (more preferably) just <code>import sklearn</code> and use the built-in <strong>LinearRegression</strong> function found <a href="http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html" target="_blank">here</a>.
+					
+				</div>
+				<!--
+				<div class="thought">
+					Starting out writing about this today. My plan is to compelte the full OSDSMS that can be found <a href="http://datasciencemasters.org/">here</a>. Not sure what I will be using this blog for just yet, but I suspect it will be helpful to myself or others trying to learn the basics of data science.
+				</div>
+				-->
+
+				<div class="thought">
+				<h3>Graphs</h3>
+				We can create a histogram of a graph based on the frequency of n-out-edges, that is, we count how many vertices/nodes have 0 edges coming out, 1 edge coming out, 2 edges coming out, etc. Histograms of graphs can tell use a lot about the structure. Human generated data has <a href="https://en.wikipedia.org/wiki/Zipf's_law" target="_blank">Zipf distribution</a>.
+				<br>
+				Connectivity coefficient is the minimum number of vertices(nodes) that are needed to be removed that will disconnect the graph. For example, in a network, if the connectivity coeffecient == 1 then someone could potentially take out only 1 machine to disconnect parts of the entire network.
+				<br>
+				Two vertices (x,y) are <strong>strongly connected</strong> if x is reachable from y <strong>and</strong> y is reachable from x.
+				<br>
+				X and Y are <strong>connected</strong> if x is reachable from y <strong>or</strong> y is reachable from x.
+				</div>
+				
+			</div>
+
+			<div class="course" id="ml-nanodegree">
+			<h2>Udacity - Machine Learning</h2>
+			<a href="https://www.udacity.com/course/viewer#!/c-nd009/l-5448319214/m-5451872517">Course home</a>
+			<br>
+
+				<div class="thought">
+					<a href="https://www.youtube.com/watch?v=E4rlJ82CUZI" target="_blank">Bayes' Theorem</a> 		
+				</div>
+
+			</div>
+
+		</div>
+		<script src="https://beta.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML-full"></script>
+		<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	</body>
+</html>

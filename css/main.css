@@ -1,0 +1,75 @@
+@media (min-width:320px)  { 
+    hr { 
+        width: 100%;
+    }
+
+    h1 { 
+        font-size: 6rem;
+        text-align: center;
+    }
+
+    .left { text-align:center; }
+}
+    @media (min-width:480px)  { /* smartphones, Android phones, landscape iPhone */ }
+    @media (min-width:600px)  { /* portrait tablets, portrait iPad, e-readers (Nook/Kindle), landscape 800x480 phones (Android) */ }
+    @media (min-width:801px)  { /* tablet, landscape iPad, lo-res laptops ands desktops */ }
+    @media (min-width:1025px) { /* big landscape tablets, laptops, and desktops */ }
+    @media (min-width:1281px) { 
+        .container { 
+        display: flex;
+        margin: 0px;
+    }
+    
+    hr { 
+        margin-right: 70%;
+    }
+
+    h1 { font-size: 10rem; } 
+}
+
+
+/*@media (min-width: 768px) {
+    
+    
+}
+
+@media (max-width: 768px) {
+    
+    
+}*/
+
+
+a { text-decoration: none; color: #fff; }
+a:hover { color: #ceb180; }
+a img { border: none; }
+    
+footer a{
+  	    display: inline;
+}
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 200;
+    padding: 6%;
+    background-color: rgb(34,34,34); 
+    color: rgb(255,255,255); 
+}
+
+.abs { position: absolute; }
+.left { flex:2; }
+.main {
+    margin: 3%;
+    flex:5; margin: 18% 0 0 14%; 
+    font-size: 4rem; 
+}
+.xlarge { width: 40rem; }
+
+hr {
+    border: none;
+    height: 2px;
+    /* Set the hr color */
+    color: #fff; /* old IE */
+    background-color:  #fff; /* Modern Browsers */
+    
+}
+
+.heading { margin-left: 12px; }

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>pixel.art</title>
+		<link rel="stylesheet" href="css/skeleton.css" />
+		<style>
+
+		 body { 
+			 	width: 800px; 
+			 	height: 600px; 
+			 	line-height: 0;
+			  }
+		 .pixel {
+		 	display: inline-block;
+		 	background-color:#fff;
+		 	width: 20px;
+			min-height: 20px;
+			border-bottom:1px #ccc solid;
+			border-right:1px #ccc solid;
+
+		 }
+
+		 #colorPicker{
+		 	position: absolute;
+		 	right: 18px;
+		 }
+		</style>
+	</head>
+	<body>
+	<input type="color" id="colorPicker">
+		<script>
+		var height = 40;
+		var width = 30;
+		var boardSize = height * width;
+		var setColor = "#ffffff";
+		function addListener(element, eventName, handler) {
+		  if (element.addEventListener) {
+		    element.addEventListener(eventName, handler, false);
+		  }
+		  else if (element.attachEvent) {
+		    element.attachEvent('on' + eventName, handler);
+		  }
+		  else {
+		    element['on' + eventName] = handler;
+		  }
+		}
+
+		function changeToColor(color, el){
+			el.style.backgroundColor = color;
+		}
+
+
+		// self executing function here
+(function() {
+   // your page initialization code here
+   // the DOM will be available here
+   		for (var i = 0; i < (boardSize); i++) {
+			// create div
+			var pixel = document.createElement('span');
+			var handler = addListener(pixel, 'click', function(elem) {
+				this.style.backgroundColor = setColor;
+			});			
+
+			pixel.className = "pixel";
+			document.body.appendChild(pixel)
+			
+		
+		}
+
+		var picker = document.getElementById("colorPicker");
+		var pickerHandler = addListener(picker, 'change', function(elem) {
+			console.log(this.value);
+			setColor = this.value;
+		});
+
+})();
+
+function printBoard(){
+	for (var i = 0; i < boardSize.length; i++) {
+		console.log( document.getElementsByTagName("span")[0].style["background-color"] );
+	}
+}
+		</script> 
+	</body>
+</html>

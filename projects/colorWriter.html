@@ -1,0 +1,58 @@
+<html>
+ <head>
+  <title>Title page</title>
+  <style type="text/css">
+  div {position: absolute;}
+  </style>
+  
+  </head>
+   <body style="padding:0px;margin:0px;background-color:#FFF;" onclick='javascript:window.location.reload()'>
+   <script type="text/javascript">
+   
+   const size = 6; //pixels
+
+   function shuffle() {
+		for (var i = 0;i < 100;i++){
+			el = document.getElementById('div0'+i);
+			el.style.top = Math.floor(Math.random()*i%3)
+			el.style.left = Math.floor(Math.random()*i%2)
+		}
+   }
+   
+   function drawDivs(){
+		for(var i=0;i<(window.innerHeight-18);i+=size) {
+		 for(var x=0;x<(window.innerWidth-20)/size;x++){
+		 document.writeln('<div id=div'+i+x+' style=\'width:'+size+'px;height:'+size+';top:' + i + ';left:' + x*size + '\' onmouseover=changeColor(\'div'+i+x+'\')></div>');
+		 }
+		}
+   }
+   
+   
+   function changeColor(div) 
+    {
+	//document.getElementById(div).setAttribute('style', 'background-color:#'+ randomString());
+	
+	var el = document.getElementById(div);
+	el.style.backgroundColor = '#'+randomString(); //'#000000';	
+	// document.body.style.backgroundColor = '#' + randomString();
+	
+	}
+   
+   function randomString() {
+	var chars = "3456789ABCDEF";
+	var string_length = 6;
+	var randomstring = '';
+	for (var i=0; i<string_length; i++) {
+		var rnum = Math.floor(Math.random() * chars.length);
+		randomstring += chars.substring(rnum,rnum+1);
+	}
+	return randomstring;
+}
+
+drawDivs();
+   
+   </script>
+</div>
+   
+   </body>
+</html>

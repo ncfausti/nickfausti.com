@@ -1,0 +1,17 @@
+Two replicates of treatment for each well
+
+One dataset goes to one excel, other goes to the other
+
+Paste into main excel
+
+top chunk of data is input
+bottom chunk is output
+
+copy bottom chunk (normalized) to nm avg sheet at cell one
+take second rep and past to the one on the right
+
+normalize, normalize, average
+
+
+max, auc
+make graphs from these
