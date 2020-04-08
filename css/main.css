@@ -48,10 +48,10 @@ footer a{
 }
 body {
     font-family: Helvetica, Arial, sans-serif;
-    font-weight: 200;
+    font-weight: 100;
     padding: 6%;
-    background-color: rgb(45, 99, 237); 
-    color: rgb(255,255,255); 
+    background-color: rgb(235,235,235); 
+    color:  rgb(235, 100, 25); 
 }
 
 .abs { position: absolute; }
