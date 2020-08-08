@@ -1,4 +1,3 @@
-"use strict";
 (function () {
     const BOARD_HEIGHT = 25;
     const BOARD_WIDTH = 25;
@@ -122,7 +121,7 @@
         return divBoard;
     }
     let board = new Board(BOARD_HEIGHT, BOARD_WIDTH);
-    document.body.appendChild(setup(board));
+    document.getElementById("playground").appendChild(setup(board));
     let x = parseInt(START[0]);
     let y = parseInt(START[2]);
     console.log(board.bfs(new Marker(x, y)));
@@ -135,3 +134,4 @@
     };
     slider?.addEventListener("change", setSpeed);
 })();
+//# sourceMappingURL=bfs.js.map

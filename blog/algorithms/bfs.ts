@@ -19,7 +19,7 @@
             return document.getElementById(`marker-${this.x}-${this.y}`);
         }
 
-        getNeighbors(): Marker[] | undefined {
+        getNeighbors(): Marker[] {
             let neighbors: Marker[] = [];
 
             // check 12 o'clock
@@ -149,7 +149,7 @@
     }
 
     let board = new Board(BOARD_HEIGHT, BOARD_WIDTH);
-    document.body.appendChild(setup(board));
+    document.getElementById("playground").appendChild(setup(board));
     let x = parseInt(START[0]);
     let y = parseInt(START[2]);
     console.log(board.bfs(new Marker(x, y)));
