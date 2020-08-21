@@ -1,9 +1,8 @@
-import heapq
 from collections import deque
 from itertools import product, combinations, combinations_with_replacement, permutations
 
 # Use heapq to efficientl keep track of updated values from list
-from heapq import merge
+from heapq import merge # heapqueue a.k.a. priority queue
 
 
 def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
