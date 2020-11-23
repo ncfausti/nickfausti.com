@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .highlighter:hover {
+        background-color: lime;
+        cursor: default;
+      }
+    </style>
+  </head>
+
+  <body>
+    <p>
+      In
+      <a href="/wiki/Philosophy" title="Philosophy" style="color: red"
+        >philosophy</a
+      >, "<b style="color: red">the Absurd</b>" refers to the conflict between
+      the human tendency to seek
+      <a
+        href="/wiki/Intrinsic_value_(ethics)"
+        title="Intrinsic value (ethics)"
+        style="color: red"
+        >inherent value</a
+      >
+      and
+      <a href="/wiki/Meaning_of_life" title="Meaning of life" style="color: red"
+        >meaning in life</a
+      >, and the human inability to find any in a purposeless, meaningless or
+      chaotic and irrational universe.<sup id="cite_ref-1" class="reference"
+        ><a href="#cite_note-1">[1]</a></sup
+      >
+      The universe and the human mind do not each separately cause the Absurd,
+      but rather, the Absurd arises by the contradictory nature of the two
+      existing simultaneously.
+    </p>
+    <p>
+      In
+      <a href="/wiki/Philosophy" title="Philosophy" style="color: red"
+        >philosophy</a
+      >, "<b style="color: red">the Absurd</b>" refers to the conflict between
+      the human tendency to seek
+      <a
+        href="/wiki/Intrinsic_value_(ethics)"
+        title="Intrinsic value (ethics)"
+        style="color: red"
+        >inherent value</a
+      >
+      and
+      <a href="/wiki/Meaning_of_life" title="Meaning of life" style="color: red"
+        >meaning in life</a
+      >, and the human inability to find any in a purposeless, meaningless or
+      chaotic and irrational universe.<sup id="cite_ref-1" class="reference"
+        ><a href="#cite_note-1">[1]</a></sup
+      >
+      The universe and the human mind do not each separately cause the Absurd,
+      but rather, the Absurd arises by the contradictory nature of the two
+      existing simultaneously.
+    </p>
+
+    <script>
+      /* Function to add style element */
+      function addStyle(styles) {
+        /* Create style document */
+        var css = document.createElement("style");
+        css.type = "text/css";
+
+        if (css.styleSheet) css.styleSheet.cssText = styles;
+        else css.appendChild(document.createTextNode(styles));
+
+        /* Append style to the tag name */
+        document.getElementsByTagName("head")[0].appendChild(css);
+      }
+
+      var styles = "span + .highlighter:hover + span { background-color: lime;";
+      addStyle(styles);
+
+        // NodeList
+        let nodes = document.querySelector("p").childNodes;
+        let p2 = document.createElement('p');
+    
+        for (const e in nodes) {
+            console.log(nodes[e])
+          process(nodes[e]);
+        }
+
+        if (nodes[0].parentNode.parentNode) {
+          nodes[0].parentNode.parentNode.replaceChild(p2, nodes[0].parentNode);
+        }
+
+      
+
+      function tokenize(textNode) {
+        return textNode.data
+          .trim()
+          .split(/\ /)
+          .filter((s) => s.length > 0);
+      }
+
+      function wrap(s, className) {
+        const span = document.createElement("span");
+        span.className = className;
+        if (s === '"') {
+          span.innerHTML = s;
+        } else if (s === ",") {
+          span.innerHTML = s;
+        } else {
+          span.innerHTML = " " + s;
+        }
+        return span;
+      }
+
+      function process(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const tokens = tokenize(node);
+          console.log(tokens);
+          const wrapped_tokens = tokens.map((token) =>
+            p2.appendChild(wrap(token, "highlighter"))
+          );
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          p2.appendChild(wrap(node.outerHTML, "highlighter"));
+        }
+      }
+    </script>
+  </body>
+</html>
