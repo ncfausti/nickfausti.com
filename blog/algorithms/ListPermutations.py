@@ -15,5 +15,4 @@ def ListPermutations(s):
     
     RecPermute("", s)
 
-ls = [perm for perm in ListPermutations("abcd")]
-print(ls)
+ListPermutations("abc")
