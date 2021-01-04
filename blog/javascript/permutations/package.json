@@ -1,0 +1,22 @@
+{
+  "name": "permutations",
+  "version": "1.0.0",
+  "description": "Algorithm to generate permutations of a string using lodash",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start" : "nodemon --exec babel-node index.js"
+  },
+  "author": "Nick Fausti",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.20"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/node": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "nodemon": "^2.0.6"
+  }
+}
