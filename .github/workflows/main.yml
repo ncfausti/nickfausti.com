@@ -20,7 +20,7 @@ jobs:
     
     - name: Sync to S3
       run: |
-        aws s3 sync . s3://nickfausti.com --delete --exclude ".git/*" --exclude ".github/*"
+        aws s3 sync . s3://nickfausti.com --exclude ".git/*" --exclude ".github/*"
     
     - name: Invalidate CloudFront (optional)
       run: |
