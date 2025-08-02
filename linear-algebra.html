@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swarm Intelligence Simulator</title>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #111827;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useRef, useEffect, useState, useCallback } = React;
+
+      // Matrix operations utilities
+      const matrixMultiply = (a, b) => {
+        const result = [];
+        for (let i = 0; i < a.length; i++) {
+          result[i] = [];
+          for (let j = 0; j < b[0].length; j++) {
+            let sum = 0;
+            for (let k = 0; k < b.length; k++) {
+              sum += a[i][k] * b[k][j];
+            }
+            result[i][j] = sum;
+          }
+        }
+        return result;
+      };
+
+      // Transform a point using a transformation matrix
+      const transformPoint = (point, matrix) => {
+        const homogeneous = [[point.x], [point.y], [1]];
+        const transformed = matrixMultiply(matrix, homogeneous);
+        return {
+          x: transformed[0][0],
+          y: transformed[1][0],
+        };
+      };
+
+      // Transformation matrix generators
+      const getTranslationMatrix = (tx, ty) => [
+        [1, 0, tx],
+        [0, 1, ty],
+        [0, 0, 1],
+      ];
+
+      const getRotationMatrix = (angle) => {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        return [
+          [cos, -sin, 0],
+          [sin, cos, 0],
+          [0, 0, 1],
+        ];
+      };
+
+      const getScaleMatrix = (sx, sy) => [
+        [sx, 0, 0],
+        [0, sy, 0],
+        [0, 0, 1],
+      ];
+
+      // Additional transformation matrix generators
+      const getShearMatrix = (shx, shy) => [
+        [1, shx, 0],
+        [shy, 1, 0],
+        [0, 0, 1],
+      ];
+
+      const getReflectionMatrix = (axis) => {
+        if (axis === "x")
+          return [
+            [1, 0, 0],
+            [0, -1, 0],
+            [0, 0, 1],
+          ];
+        if (axis === "y")
+          return [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+          ];
+        if (axis === "xy")
+          return [
+            [0, 1, 0],
+            [1, 0, 0],
+            [0, 0, 1],
+          ]; // Reflection across y=x
+        return getIdentityMatrix();
+      };
+
+      const getIdentityMatrix = () => [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ];
+
+      const LinearAlgebraCanvas = () => {
+        const canvasRef = useRef(null);
+        const animationRef = useRef(null);
+        const [isAnimating, setIsAnimating] = useState(false);
+        const [animationTime, setAnimationTime] = useState(0);
+        const [globalTransform, setGlobalTransform] = useState(
+          getIdentityMatrix()
+        );
+
+        // Shape definitions
+        const [shapes, setShapes] = useState([
+          {
+            id: "triangle",
+            points: [
+              { x: 0, y: -50 },
+              { x: -43, y: 25 },
+              { x: 43, y: 25 },
+            ],
+            color: "#3b82f6",
+            strokeColor: "#1d4ed8",
+          },
+          {
+            id: "square",
+            points: [
+              { x: -30, y: -30 },
+              { x: 30, y: -30 },
+              { x: 30, y: 30 },
+              { x: -30, y: 30 },
+            ],
+            color: "#ef4444",
+            strokeColor: "#dc2626",
+          },
+        ]);
+
+        // Canvas dimensions and coordinate system
+        const canvasWidth = 800;
+        const canvasHeight = 600;
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+
+        // Convert canvas coordinates to screen coordinates
+        const toScreenCoords = (point) => ({
+          x: point.x + centerX,
+          y: centerY - point.y, // Flip Y axis for mathematical convention
+        });
+
+        // Draw coordinate grid with global transformation
+        const drawGrid = (ctx, transform = getIdentityMatrix()) => {
+          ctx.strokeStyle = "#e5e7eb";
+          ctx.lineWidth = 1;
+
+          // Grid spacing in world coordinates
+          const gridSpacing = 40;
+          const gridRange = 400; // How far to extend grid lines
+
+          // Draw grid lines by transforming world coordinates
+          for (let i = -gridRange; i <= gridRange; i += gridSpacing) {
+            // Vertical lines (constant x)
+            ctx.beginPath();
+            const topPoint = transformPoint({ x: i, y: -gridRange }, transform);
+            const bottomPoint = transformPoint(
+              { x: i, y: gridRange },
+              transform
+            );
+            const topScreen = toScreenCoords(topPoint);
+            const bottomScreen = toScreenCoords(bottomPoint);
+            ctx.moveTo(topScreen.x, topScreen.y);
+            ctx.lineTo(bottomScreen.x, bottomScreen.y);
+            ctx.stroke();
+
+            // Horizontal lines (constant y)
+            ctx.beginPath();
+            const leftPoint = transformPoint(
+              { x: -gridRange, y: i },
+              transform
+            );
+            const rightPoint = transformPoint(
+              { x: gridRange, y: i },
+              transform
+            );
+            const leftScreen = toScreenCoords(leftPoint);
+            const rightScreen = toScreenCoords(rightPoint);
+            ctx.moveTo(leftScreen.x, leftScreen.y);
+            ctx.lineTo(rightScreen.x, rightScreen.y);
+            ctx.stroke();
+          }
+
+          // Main axes (thicker)
+          ctx.strokeStyle = "#6b7280";
+          ctx.lineWidth = 3;
+
+          // X axis
+          ctx.beginPath();
+          const xAxisStart = transformPoint({ x: -gridRange, y: 0 }, transform);
+          const xAxisEnd = transformPoint({ x: gridRange, y: 0 }, transform);
+          const xStartScreen = toScreenCoords(xAxisStart);
+          const xEndScreen = toScreenCoords(xAxisEnd);
+          ctx.moveTo(xStartScreen.x, xStartScreen.y);
+          ctx.lineTo(xEndScreen.x, xEndScreen.y);
+          ctx.stroke();
+
+          // Y axis
+          ctx.beginPath();
+          const yAxisStart = transformPoint({ x: 0, y: -gridRange }, transform);
+          const yAxisEnd = transformPoint({ x: 0, y: gridRange }, transform);
+          const yStartScreen = toScreenCoords(yAxisStart);
+          const yEndScreen = toScreenCoords(yAxisEnd);
+          ctx.moveTo(yStartScreen.x, yStartScreen.y);
+          ctx.lineTo(yEndScreen.x, yEndScreen.y);
+          ctx.stroke();
+
+          // Origin point
+          ctx.fillStyle = "#374151";
+          const origin = transformPoint({ x: 0, y: 0 }, transform);
+          const originScreen = toScreenCoords(origin);
+          ctx.beginPath();
+          ctx.arc(originScreen.x, originScreen.y, 5, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // Draw basis vectors
+          ctx.lineWidth = 4;
+
+          // i vector (unit x)
+          ctx.strokeStyle = "#dc2626"; // Red
+          ctx.beginPath();
+          const iVector = transformPoint({ x: 80, y: 0 }, transform);
+          const iScreen = toScreenCoords(iVector);
+          ctx.moveTo(originScreen.x, originScreen.y);
+          ctx.lineTo(iScreen.x, iScreen.y);
+          ctx.stroke();
+
+          // Draw arrowhead for i vector
+          const iAngle = Math.atan2(
+            iScreen.y - originScreen.y,
+            iScreen.x - originScreen.x
+          );
+          ctx.beginPath();
+          ctx.moveTo(iScreen.x, iScreen.y);
+          ctx.lineTo(
+            iScreen.x - 10 * Math.cos(iAngle - 0.3),
+            iScreen.y - 10 * Math.sin(iAngle - 0.3)
+          );
+          ctx.moveTo(iScreen.x, iScreen.y);
+          ctx.lineTo(
+            iScreen.x - 10 * Math.cos(iAngle + 0.3),
+            iScreen.y - 10 * Math.sin(iAngle + 0.3)
+          );
+          ctx.stroke();
+
+          // j vector (unit y)
+          ctx.strokeStyle = "#16a34a"; // Green
+          ctx.beginPath();
+          const jVector = transformPoint({ x: 0, y: 80 }, transform);
+          const jScreen = toScreenCoords(jVector);
+          ctx.moveTo(originScreen.x, originScreen.y);
+          ctx.lineTo(jScreen.x, jScreen.y);
+          ctx.stroke();
+
+          // Draw arrowhead for j vector
+          const jAngle = Math.atan2(
+            jScreen.y - originScreen.y,
+            jScreen.x - originScreen.x
+          );
+          ctx.beginPath();
+          ctx.moveTo(jScreen.x, jScreen.y);
+          ctx.lineTo(
+            jScreen.x - 10 * Math.cos(jAngle - 0.3),
+            jScreen.y - 10 * Math.sin(jAngle - 0.3)
+          );
+          ctx.moveTo(jScreen.x, jScreen.y);
+          ctx.lineTo(
+            jScreen.x - 10 * Math.cos(jAngle + 0.3),
+            jScreen.y - 10 * Math.sin(jAngle + 0.3)
+          );
+          ctx.stroke();
+
+          // Labels for basis vectors
+          ctx.fillStyle = "#dc2626";
+          ctx.font = "bold 16px Arial";
+          ctx.fillText("i", iScreen.x + 5, iScreen.y + 5);
+          ctx.fillStyle = "#16a34a";
+          ctx.fillText("j", jScreen.x + 5, jScreen.y - 5);
+        };
+
+        // Draw a shape (now expects the complete transformation to be passed)
+        const drawShape = (
+          ctx,
+          shape,
+          transformMatrix = getIdentityMatrix()
+        ) => {
+          if (shape.points.length === 0) return;
+
+          // Transform all points
+          const transformedPoints = shape.points.map((point) =>
+            transformPoint(point, transformMatrix)
+          );
+
+          // Convert to screen coordinates
+          const screenPoints = transformedPoints.map(toScreenCoords);
+
+          // Draw filled shape
+          ctx.fillStyle = shape.color + "40"; // Add transparency
+          ctx.strokeStyle = shape.strokeColor;
+          ctx.lineWidth = 2;
+
+          ctx.beginPath();
+          ctx.moveTo(screenPoints[0].x, screenPoints[0].y);
+
+          for (let i = 1; i < screenPoints.length; i++) {
+            ctx.lineTo(screenPoints[i].x, screenPoints[i].y);
+          }
+
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          // Draw vertices
+          ctx.fillStyle = shape.strokeColor;
+          screenPoints.forEach((point) => {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
+            ctx.fill();
+          });
+        };
+
+        // Animation function
+        const animate = useCallback(() => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+          // Calculate global transformation for the coordinate system
+          const time = animationTime * 0.01;
+          let currentGlobalTransform = globalTransform;
+
+          if (isAnimating) {
+            // Apply animated global transformation
+            const shearMatrix = getShearMatrix(
+              0.3 * Math.sin(time),
+              0.2 * Math.cos(time * 0.7)
+            );
+            const scaleMatrix = getScaleMatrix(
+              1 + 0.1 * Math.sin(time * 1.2),
+              1 + 0.1 * Math.cos(time * 0.8)
+            );
+            currentGlobalTransform = matrixMultiply(
+              globalTransform,
+              matrixMultiply(shearMatrix, scaleMatrix)
+            );
+          }
+
+          // Draw transformed grid
+          drawGrid(ctx, currentGlobalTransform);
+
+          // Calculate local transformations for shapes (these happen in the transformed space)
+          const localTime = animationTime * 0.02;
+
+          // Draw shapes with combined transformations
+          shapes.forEach((shape, index) => {
+            let localTransform = getIdentityMatrix();
+
+            if (isAnimating) {
+              if (index === 0) {
+                // Triangle - rotation in transformed space
+                const rotationMatrix = getRotationMatrix(localTime);
+                localTransform = matrixMultiply(localTransform, rotationMatrix);
+              } else if (index === 1) {
+                // Square - translation + scaling in transformed space
+                const translationMatrix = getTranslationMatrix(
+                  60 * Math.sin(localTime * 0.5),
+                  40 * Math.cos(localTime * 0.3)
+                );
+                const scaleMatrix = getScaleMatrix(
+                  1 + 0.2 * Math.sin(localTime * 0.7),
+                  1 + 0.2 * Math.cos(localTime * 0.7)
+                );
+                localTransform = matrixMultiply(translationMatrix, scaleMatrix);
+              }
+            }
+
+            // Combine global and local transformations
+            const finalTransform = matrixMultiply(
+              currentGlobalTransform,
+              localTransform
+            );
+            drawShape(ctx, shape, finalTransform);
+          });
+
+          if (isAnimating) {
+            setAnimationTime((prev) => prev + 1);
+            animationRef.current = requestAnimationFrame(animate);
+          }
+        }, [shapes, isAnimating, animationTime, globalTransform]);
+
+        // Transformation control functions
+        const applyGlobalTransform = (matrix) => {
+          setGlobalTransform((prev) => matrixMultiply(prev, matrix));
+        };
+
+        const resetGlobalTransform = () => {
+          setGlobalTransform(getIdentityMatrix());
+        };
+
+        // Start/stop animation
+        const toggleAnimation = () => {
+          setIsAnimating((prev) => !prev);
+        };
+
+        // Reset animation
+        const resetAnimation = () => {
+          setIsAnimating(false);
+          setAnimationTime(0);
+        };
+
+        // Draw static frame
+        const drawStatic = useCallback(() => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+          drawGrid(ctx, globalTransform);
+
+          shapes.forEach((shape) => {
+            drawShape(ctx, shape, globalTransform);
+          });
+        }, [shapes, globalTransform]);
+
+        // Effect for animation
+        useEffect(() => {
+          if (isAnimating) {
+            animationRef.current = requestAnimationFrame(animate);
+          } else {
+            if (animationRef.current) {
+              cancelAnimationFrame(animationRef.current);
+            }
+            drawStatic();
+          }
+
+          return () => {
+            if (animationRef.current) {
+              cancelAnimationFrame(animationRef.current);
+            }
+          };
+        }, [isAnimating, animate, drawStatic]);
+
+        // Initial draw
+        useEffect(() => {
+          drawStatic();
+        }, [drawStatic]);
+
+        return (
+          <div className='flex items-start p-6 bg-gray-50'>
+            <div className='flex flex-col items-center p-6 bg-gray-50 min-h-screen'>
+              <h1 className='text-3xl font-bold mb-6 text-gray-800'>
+                Linear Algebra Canvas
+              </h1>
+
+              <div className='mb-4 flex flex-wrap gap-3 justify-center'>
+                <button
+                  onClick={toggleAnimation}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                    isAnimating
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "bg-blue-500 hover:bg-blue-600 text-white"
+                  }`}
+                >
+                  {isAnimating ? "Stop Animation" : "Start Animation"}
+                </button>
+
+                <button
+                  onClick={resetAnimation}
+                  className='px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors'
+                >
+                  Reset Animation
+                </button>
+
+                <button
+                  onClick={resetGlobalTransform}
+                  className='px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors'
+                >
+                  Reset Transform
+                </button>
+              </div>
+
+              <div className='mb-4 flex flex-wrap gap-2 justify-center'>
+                <button
+                  onClick={() => applyGlobalTransform(getShearMatrix(0.3, 0))}
+                  className='px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded font-medium transition-colors text-sm'
+                >
+                  Shear X
+                </button>
+
+                <button
+                  onClick={() => applyGlobalTransform(getShearMatrix(0, 0.3))}
+                  className='px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded font-medium transition-colors text-sm'
+                >
+                  Shear Y
+                </button>
+
+                <button
+                  onClick={() =>
+                    applyGlobalTransform(getRotationMatrix(Math.PI / 6))
+                  }
+                  className='px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded font-medium transition-colors text-sm'
+                >
+                  Rotate 30°
+                </button>
+
+                <button
+                  onClick={() => applyGlobalTransform(getScaleMatrix(0.8, 0.8))}
+                  className='px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded font-medium transition-colors text-sm'
+                >
+                  Scale Down
+                </button>
+
+                <button
+                  onClick={() => applyGlobalTransform(getScaleMatrix(1.2, 1.2))}
+                  className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium transition-colors text-sm'
+                >
+                  Scale Up
+                </button>
+
+                <button
+                  onClick={() => applyGlobalTransform(getReflectionMatrix("x"))}
+                  className='px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded font-medium transition-colors text-sm'
+                >
+                  Reflect X
+                </button>
+
+                <button
+                  onClick={() => applyGlobalTransform(getReflectionMatrix("y"))}
+                  className='px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded font-medium transition-colors text-sm'
+                >
+                  Reflect Y
+                </button>
+              </div>
+
+              <div className='border-2 border-gray-300 rounded-lg shadow-lg bg-white'>
+                <canvas
+                  ref={canvasRef}
+                  width={canvasWidth}
+                  height={canvasHeight}
+                  className='block'
+                />
+              </div>
+            </div>
+            <div className='max-w-3xl'>
+              <h2 className='text-xl font-semibold mb-3 text-gray-700'>
+                Linear Transformation Visualization
+              </h2>
+              <p className='text-gray-600 mb-4'>
+                This demonstrates how linear transformations affect the entire
+                coordinate system. The grid, basis vectors (i, j), and shapes
+                all transform together.
+              </p>
+              <div className='text-sm text-gray-500 space-y-2'>
+                <div className='flex flex-wrap justify-center gap-4'>
+                  <p>
+                    <span className='text-red-600 font-semibold'>
+                      Red arrows (i):
+                    </span>{" "}
+                    Transformed x-axis basis vector
+                  </p>
+                  <p>
+                    <span className='text-green-600 font-semibold'>
+                      Green arrows (j):
+                    </span>{" "}
+                    Transformed y-axis basis vector
+                  </p>
+                </div>
+                <p>
+                  <span className='text-blue-600'>Blue Triangle:</span> Rotates
+                  in the transformed space
+                </p>
+                <p>
+                  <span className='text-red-600'>Red Square:</span> Translates
+                  and scales in the transformed space
+                </p>
+                <p className='mt-3 text-xs'>
+                  <strong>Key Concept:</strong> Linear transformations preserve
+                  lines and parallelism. Notice how the grid remains a grid
+                  (though distorted) and parallel lines stay parallel.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      ReactDOM.render(<LinearAlgebraCanvas />, document.getElementById("root"));
+    </script>
+  </body>
+</html>

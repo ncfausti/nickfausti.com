@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swarm Intelligence Simulator</title>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #111827;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef, useCallback } = React;
+
+      // Simple icon components to replace Lucide React
+      const Play = ({ size = 16 }) => (
+        <svg
+          width={size}
+          height={size}
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+        >
+          <polygon points='5,3 19,12 5,21'></polygon>
+        </svg>
+      );
+
+      const Pause = ({ size = 16 }) => (
+        <svg
+          width={size}
+          height={size}
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+        >
+          <rect x='6' y='4' width='4' height='16'></rect>
+          <rect x='14' y='4' width='4' height='16'></rect>
+        </svg>
+      );
+
+      const RotateCcw = ({ size = 16 }) => (
+        <svg
+          width={size}
+          height={size}
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+        >
+          <polyline points='1,4 1,10 7,10'></polyline>
+          <path d='M3.51,15a9,9,0,0,0,13.48,3.51'></path>
+        </svg>
+      );
+
+      const Settings = ({ size = 16 }) => (
+        <svg
+          width={size}
+          height={size}
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+        >
+          <circle cx='12' cy='12' r='3'></circle>
+          <path d='M12,1V5'></path>
+          <path d='M12,19V23'></path>
+          <path d='M4.22,4.22L7.05,7.05'></path>
+          <path d='M16.95,16.95L19.78,19.78'></path>
+          <path d='M1,12H5'></path>
+          <path d='M19,12H23'></path>
+          <path d='M4.22,19.78L7.05,16.95'></path>
+          <path d='M16.95,7.05L19.78,4.22'></path>
+        </svg>
+      );
+
+      const SwarmSimulator = () => {
+        const canvasRef = useRef(null);
+        const animationRef = useRef(null);
+        const [isRunning, setIsRunning] = useState(false);
+        const [showControls, setShowControls] = useState(true);
+
+        const [swarmType, setSwarmType] = useState("boids");
+        const [particleCount, setParticleCount] = useState(50);
+
+        // Boids parameters
+        const [separationRadius, setSeparationRadius] = useState(25);
+        const [alignmentRadius, setAlignmentRadius] = useState(50);
+        const [cohesionRadius, setCohesionRadius] = useState(50);
+        const [separationWeight, setSeparationWeight] = useState(1.5);
+        const [alignmentWeight, setAlignmentWeight] = useState(1.0);
+        const [cohesionWeight, setCohesionWeight] = useState(1.0);
+        const [maxSpeed, setMaxSpeed] = useState(2);
+
+        // Ant parameters
+        const [pheromoneStrength, setPheromoneStrength] = useState(0.1);
+        const [pheromoneEvaporation, setPheromoneEvaporation] = useState(0.995);
+        const [wanderStrength, setWanderStrength] = useState(0.1);
+        const [antSensorAngle, setAntSensorAngle] = useState(45);
+        const [antSensorDistance, setAntSensorDistance] = useState(20);
+
+        // Bee parameters
+        const [attractorStrength, setAttractorStrength] = useState(0.5);
+        const [noiseStrength, setNoiseStrength] = useState(0.2);
+        const [followRadius, setFollowRadius] = useState(80);
+
+        const particlesRef = useRef([]);
+        const pheromoneMapRef = useRef(null);
+        const attractorsRef = useRef([]);
+
+        // Initialize particles based on swarm type
+        const initializeParticles = useCallback(() => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          const particles = [];
+          for (let i = 0; i < particleCount; i++) {
+            particles.push({
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height,
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 2,
+              angle: Math.random() * Math.PI * 2,
+              id: i,
+              hasFood: false,
+              target: null,
+            });
+          }
+          particlesRef.current = particles;
+
+          // Initialize pheromone map for ants
+          if (swarmType === "ants") {
+            const width = Math.ceil(canvas.width / 4);
+            const height = Math.ceil(canvas.height / 4);
+            pheromoneMapRef.current = Array(height)
+              .fill()
+              .map(() => Array(width).fill(0));
+          }
+
+          // Initialize attractors for bees
+          if (swarmType === "bees") {
+            attractorsRef.current = [
+              { x: canvas.width * 0.2, y: canvas.height * 0.3, strength: 1 },
+              { x: canvas.width * 0.8, y: canvas.height * 0.7, strength: 1 },
+              { x: canvas.width * 0.5, y: canvas.height * 0.5, strength: 0.5 },
+            ];
+          }
+        }, [particleCount, swarmType]);
+
+        // Boids flocking behavior
+        const updateBoids = useCallback(() => {
+          const particles = particlesRef.current;
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          particles.forEach((particle) => {
+            let sepX = 0,
+              sepY = 0,
+              sepCount = 0;
+            let alignX = 0,
+              alignY = 0,
+              alignCount = 0;
+            let cohX = 0,
+              cohY = 0,
+              cohCount = 0;
+
+            particles.forEach((other) => {
+              if (particle === other) return;
+
+              const dx = particle.x - other.x;
+              const dy = particle.y - other.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              // Separation
+              if (dist < separationRadius && dist > 0) {
+                sepX += dx / dist;
+                sepY += dy / dist;
+                sepCount++;
+              }
+
+              // Alignment
+              if (dist < alignmentRadius) {
+                alignX += other.vx;
+                alignY += other.vy;
+                alignCount++;
+              }
+
+              // Cohesion
+              if (dist < cohesionRadius) {
+                cohX += other.x;
+                cohY += other.y;
+                cohCount++;
+              }
+            });
+
+            // Apply separation
+            if (sepCount > 0) {
+              particle.vx += (sepX / sepCount) * separationWeight * 0.1;
+              particle.vy += (sepY / sepCount) * separationWeight * 0.1;
+            }
+
+            // Apply alignment
+            if (alignCount > 0) {
+              particle.vx +=
+                (alignX / alignCount - particle.vx) * alignmentWeight * 0.1;
+              particle.vy +=
+                (alignY / alignCount - particle.vy) * alignmentWeight * 0.1;
+            }
+
+            // Apply cohesion
+            if (cohCount > 0) {
+              const avgX = cohX / cohCount - particle.x;
+              const avgY = cohY / cohCount - particle.y;
+              particle.vx += avgX * cohesionWeight * 0.001;
+              particle.vy += avgY * cohesionWeight * 0.001;
+            }
+
+            // Limit speed
+            const speed = Math.sqrt(
+              particle.vx * particle.vx + particle.vy * particle.vy
+            );
+            if (speed > maxSpeed) {
+              particle.vx = (particle.vx / speed) * maxSpeed;
+              particle.vy = (particle.vy / speed) * maxSpeed;
+            }
+
+            // Update position
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+
+            // Wrap around edges
+            if (particle.x < 0) particle.x = canvas.width;
+            if (particle.x > canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = canvas.height;
+            if (particle.y > canvas.height) particle.y = 0;
+          });
+        }, [
+          separationRadius,
+          alignmentRadius,
+          cohesionRadius,
+          separationWeight,
+          alignmentWeight,
+          cohesionWeight,
+          maxSpeed,
+        ]);
+
+        // Ant foraging behavior
+        const updateAnts = useCallback(() => {
+          const particles = particlesRef.current;
+          const canvas = canvasRef.current;
+          const pheromoneMap = pheromoneMapRef.current;
+          if (!canvas || !pheromoneMap) return;
+
+          const mapWidth = pheromoneMap[0].length;
+          const mapHeight = pheromoneMap.length;
+
+          particles.forEach((ant) => {
+            // Sense pheromones
+            const sensorDist = antSensorDistance;
+            const sensorAngleRad = (antSensorAngle * Math.PI) / 180;
+
+            const leftAngle = ant.angle - sensorAngleRad;
+            const rightAngle = ant.angle + sensorAngleRad;
+
+            const leftX = Math.floor(
+              (ant.x + Math.cos(leftAngle) * sensorDist) / 4
+            );
+            const leftY = Math.floor(
+              (ant.y + Math.sin(leftAngle) * sensorDist) / 4
+            );
+            const frontX = Math.floor(
+              (ant.x + Math.cos(ant.angle) * sensorDist) / 4
+            );
+            const frontY = Math.floor(
+              (ant.y + Math.sin(ant.angle) * sensorDist) / 4
+            );
+            const rightX = Math.floor(
+              (ant.x + Math.cos(rightAngle) * sensorDist) / 4
+            );
+            const rightY = Math.floor(
+              (ant.y + Math.sin(rightAngle) * sensorDist) / 4
+            );
+
+            const leftPheromone =
+              leftX >= 0 && leftX < mapWidth && leftY >= 0 && leftY < mapHeight
+                ? pheromoneMap[leftY][leftX]
+                : 0;
+            const frontPheromone =
+              frontX >= 0 &&
+              frontX < mapWidth &&
+              frontY >= 0 &&
+              frontY < mapHeight
+                ? pheromoneMap[frontY][frontX]
+                : 0;
+            const rightPheromone =
+              rightX >= 0 &&
+              rightX < mapWidth &&
+              rightY >= 0 &&
+              rightY < mapHeight
+                ? pheromoneMap[rightY][rightX]
+                : 0;
+
+            // Turn based on pheromone gradient
+            if (
+              frontPheromone > leftPheromone &&
+              frontPheromone > rightPheromone
+            ) {
+              // Continue straight
+            } else if (rightPheromone > leftPheromone) {
+              ant.angle += 0.1;
+            } else if (leftPheromone > rightPheromone) {
+              ant.angle -= 0.1;
+            } else {
+              // Random walk
+              ant.angle += (Math.random() - 0.5) * wanderStrength;
+            }
+
+            // Move forward
+            ant.x += Math.cos(ant.angle) * maxSpeed;
+            ant.y += Math.sin(ant.angle) * maxSpeed;
+
+            // Wrap edges
+            if (ant.x < 0) ant.x = canvas.width;
+            if (ant.x >= canvas.width) ant.x = 0;
+            if (ant.y < 0) ant.y = canvas.height;
+            if (ant.y >= canvas.height) ant.y = 0;
+
+            // Deposit pheromone
+            const mapX = Math.floor(ant.x / 4);
+            const mapY = Math.floor(ant.y / 4);
+            if (mapX >= 0 && mapX < mapWidth && mapY >= 0 && mapY < mapHeight) {
+              pheromoneMap[mapY][mapX] = Math.min(
+                1,
+                pheromoneMap[mapY][mapX] + pheromoneStrength
+              );
+            }
+          });
+
+          // Evaporate pheromones
+          for (let y = 0; y < mapHeight; y++) {
+            for (let x = 0; x < mapWidth; x++) {
+              pheromoneMap[y][x] *= pheromoneEvaporation;
+            }
+          }
+        }, [
+          antSensorAngle,
+          antSensorDistance,
+          wanderStrength,
+          maxSpeed,
+          pheromoneStrength,
+          pheromoneEvaporation,
+        ]);
+
+        // Bee swarming behavior
+        const updateBees = useCallback(() => {
+          const particles = particlesRef.current;
+          const canvas = canvasRef.current;
+          const attractors = attractorsRef.current;
+          if (!canvas) return;
+
+          particles.forEach((bee) => {
+            let forceX = 0,
+              forceY = 0;
+
+            // Attraction to nearest attractor
+            let nearestDist = Infinity;
+            let nearestAttractor = null;
+
+            attractors.forEach((attractor) => {
+              const dx = attractor.x - bee.x;
+              const dy = attractor.y - bee.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestAttractor = attractor;
+              }
+            });
+
+            if (nearestAttractor && nearestDist > 0) {
+              const dx = nearestAttractor.x - bee.x;
+              const dy = nearestAttractor.y - bee.y;
+              forceX +=
+                (dx / nearestDist) *
+                attractorStrength *
+                nearestAttractor.strength;
+              forceY +=
+                (dy / nearestDist) *
+                attractorStrength *
+                nearestAttractor.strength;
+            }
+
+            // Follow nearby bees
+            let followX = 0,
+              followY = 0,
+              followCount = 0;
+            particles.forEach((other) => {
+              if (bee === other) return;
+
+              const dx = other.x - bee.x;
+              const dy = other.y - bee.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist < followRadius && dist > 0) {
+                followX += other.vx;
+                followY += other.vy;
+                followCount++;
+              }
+            });
+
+            if (followCount > 0) {
+              forceX += (followX / followCount) * 0.1;
+              forceY += (followY / followCount) * 0.1;
+            }
+
+            // Add noise
+            forceX += (Math.random() - 0.5) * noiseStrength;
+            forceY += (Math.random() - 0.5) * noiseStrength;
+
+            // Apply forces
+            bee.vx += forceX * 0.1;
+            bee.vy += forceY * 0.1;
+
+            // Limit speed
+            const speed = Math.sqrt(bee.vx * bee.vx + bee.vy * bee.vy);
+            if (speed > maxSpeed) {
+              bee.vx = (bee.vx / speed) * maxSpeed;
+              bee.vy = (bee.vy / speed) * maxSpeed;
+            }
+
+            // Update position
+            bee.x += bee.vx;
+            bee.y += bee.vy;
+
+            // Wrap edges
+            if (bee.x < 0) bee.x = canvas.width;
+            if (bee.x >= canvas.width) bee.x = 0;
+            if (bee.y < 0) bee.y = canvas.height;
+            if (bee.y >= canvas.height) bee.y = 0;
+          });
+        }, [attractorStrength, noiseStrength, followRadius, maxSpeed]);
+
+        // Render function
+        const render = useCallback(() => {
+          const canvas = canvasRef.current;
+          const ctx = canvas?.getContext("2d");
+          if (!ctx) return;
+
+          // Clear canvas
+          ctx.fillStyle = "#0a0a0a";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          if (swarmType === "ants") {
+            // Render pheromone trails
+            const pheromoneMap = pheromoneMapRef.current;
+            if (pheromoneMap) {
+              const mapWidth = pheromoneMap[0].length;
+              const mapHeight = pheromoneMap.length;
+
+              for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                  const intensity = pheromoneMap[y][x];
+                  if (intensity > 0.01) {
+                    ctx.fillStyle = `rgba(100, 255, 100, ${intensity * 0.3})`;
+                    ctx.fillRect(x * 4, y * 4, 4, 4);
+                  }
+                }
+              }
+            }
+          }
+
+          if (swarmType === "bees") {
+            // Render attractors
+            const attractors = attractorsRef.current;
+            attractors.forEach((attractor) => {
+              ctx.beginPath();
+              ctx.arc(
+                attractor.x,
+                attractor.y,
+                8 * attractor.strength,
+                0,
+                Math.PI * 2
+              );
+              ctx.fillStyle = `rgba(255, 200, 0, 0.6)`;
+              ctx.fill();
+
+              ctx.beginPath();
+              ctx.arc(
+                attractor.x,
+                attractor.y,
+                40 * attractor.strength,
+                0,
+                Math.PI * 2
+              );
+              ctx.strokeStyle = `rgba(255, 200, 0, 0.2)`;
+              ctx.stroke();
+            });
+          }
+
+          // Render particles
+          const particles = particlesRef.current;
+          particles.forEach((particle) => {
+            ctx.beginPath();
+
+            if (swarmType === "boids") {
+              // Draw as triangular birds
+              const angle = Math.atan2(particle.vy, particle.vx);
+              const size = 6;
+
+              ctx.save();
+              ctx.translate(particle.x, particle.y);
+              ctx.rotate(angle);
+
+              ctx.beginPath();
+              ctx.moveTo(size, 0);
+              ctx.lineTo(-size, size / 2);
+              ctx.lineTo(-size / 2, 0);
+              ctx.lineTo(-size, -size / 2);
+              ctx.closePath();
+
+              ctx.fillStyle = "#60a5fa";
+              ctx.fill();
+              ctx.restore();
+            } else if (swarmType === "ants") {
+              // Draw as small circles
+              ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+              ctx.fillStyle = "#ef4444";
+              ctx.fill();
+
+              // Draw direction line
+              ctx.beginPath();
+              ctx.moveTo(particle.x, particle.y);
+              ctx.lineTo(
+                particle.x + Math.cos(particle.angle) * 8,
+                particle.y + Math.sin(particle.angle) * 8
+              );
+              ctx.strokeStyle = "#ef4444";
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            } else if (swarmType === "bees") {
+              // Draw as hexagonal bees
+              ctx.arc(particle.x, particle.y, 4, 0, Math.PI * 2);
+              ctx.fillStyle = "#fbbf24";
+              ctx.fill();
+
+              // Wings
+              ctx.beginPath();
+              ctx.ellipse(
+                particle.x - 3,
+                particle.y - 2,
+                2,
+                1,
+                Math.PI / 4,
+                0,
+                Math.PI * 2
+              );
+              ctx.ellipse(
+                particle.x - 3,
+                particle.y + 2,
+                2,
+                1,
+                -Math.PI / 4,
+                0,
+                Math.PI * 2
+              );
+              ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+              ctx.fill();
+            }
+          });
+        }, [swarmType]);
+
+        // Animation loop
+        const animate = useCallback(() => {
+          if (swarmType === "boids") updateBoids();
+          else if (swarmType === "ants") updateAnts();
+          else if (swarmType === "bees") updateBees();
+
+          render();
+          animationRef.current = requestAnimationFrame(animate);
+        }, [swarmType, updateBoids, updateAnts, updateBees, render]);
+
+        // Start/stop animation
+        const toggleAnimation = () => {
+          if (isRunning) {
+            cancelAnimationFrame(animationRef.current);
+            setIsRunning(false);
+          } else {
+            setIsRunning(true);
+            animate();
+          }
+        };
+
+        // Reset simulation
+        const resetSimulation = () => {
+          cancelAnimationFrame(animationRef.current);
+          setIsRunning(false);
+          initializeParticles();
+          render();
+        };
+
+        // Initialize on mount and when parameters change
+        useEffect(() => {
+          const canvas = canvasRef.current;
+          if (canvas) {
+            canvas.width = 800;
+            canvas.height = 600;
+            initializeParticles();
+            render();
+          }
+        }, [initializeParticles, render]);
+
+        // Handle canvas click for bees (move attractors)
+        const handleCanvasClick = (e) => {
+          if (swarmType !== "bees") return;
+
+          const canvas = canvasRef.current;
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          // Move nearest attractor
+          const attractors = attractorsRef.current;
+          let nearestDist = Infinity;
+          let nearestIndex = 0;
+
+          attractors.forEach((attractor, index) => {
+            const dist = Math.sqrt(
+              (attractor.x - x) ** 2 + (attractor.y - y) ** 2
+            );
+            if (dist < nearestDist) {
+              nearestDist = dist;
+              nearestIndex = index;
+            }
+          });
+
+          attractors[nearestIndex].x = x;
+          attractors[nearestIndex].y = y;
+        };
+
+        return (
+          <div className='w-full max-w-6xl mx-auto p-6 bg-gray-900 text-white rounded-lg'>
+            <div className='mb-6'>
+              <h1 className='text-3xl font-bold mb-2'>
+                Swarm Intelligence Simulator
+              </h1>
+              <p className='text-gray-300'>
+                Explore different swarm behaviors: flocking birds, foraging
+                ants, and swarming bees.
+                {swarmType === "bees" &&
+                  " Click on the canvas to move attractors!"}
+              </p>
+            </div>
+
+            <div className='flex gap-6'>
+              <div className='flex-1'>
+                <canvas
+                  ref={canvasRef}
+                  onClick={handleCanvasClick}
+                  className='border border-gray-600 rounded cursor-pointer bg-black'
+                  style={{ maxWidth: "100%", height: "auto" }}
+                />
+
+                <div className='flex gap-4 mt-4'>
+                  <button
+                    onClick={toggleAnimation}
+                    className='flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition-colors'
+                  >
+                    {isRunning ? <Pause size={16} /> : <Play size={16} />}
+                    {isRunning ? "Pause" : "Start"}
+                  </button>
+
+                  <button
+                    onClick={resetSimulation}
+                    className='flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors'
+                  >
+                    <RotateCcw size={16} />
+                    Reset
+                  </button>
+
+                  <button
+                    onClick={() => setShowControls(!showControls)}
+                    className='flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors'
+                  >
+                    <Settings size={16} />
+                    {showControls ? "Hide" : "Show"} Controls
+                  </button>
+                </div>
+              </div>
+
+              {showControls && (
+                <div className='w-80 bg-gray-800 p-4 rounded overflow-y-auto max-h-96'>
+                  <h3 className='text-lg font-semibold mb-4'>Parameters</h3>
+
+                  <div className='mb-4'>
+                    <label className='block text-sm font-medium mb-2'>
+                      Swarm Type
+                    </label>
+                    <select
+                      value={swarmType}
+                      onChange={(e) => setSwarmType(e.target.value)}
+                      className='w-full p-2 bg-gray-700 rounded'
+                    >
+                      <option value='boids'>Flocking Birds (Boids)</option>
+                      <option value='ants'>Foraging Ants</option>
+                      <option value='bees'>Swarming Bees</option>
+                    </select>
+                  </div>
+
+                  <div className='mb-4'>
+                    <label className='block text-sm font-medium mb-2'>
+                      Particle Count: {particleCount}
+                    </label>
+                    <input
+                      type='range'
+                      min='10'
+                      max='200'
+                      value={particleCount}
+                      onChange={(e) => setParticleCount(Number(e.target.value))}
+                      className='w-full'
+                    />
+                  </div>
+
+                  <div className='mb-4'>
+                    <label className='block text-sm font-medium mb-2'>
+                      Max Speed: {maxSpeed.toFixed(1)}
+                    </label>
+                    <input
+                      type='range'
+                      min='0.5'
+                      max='5'
+                      step='0.1'
+                      value={maxSpeed}
+                      onChange={(e) => setMaxSpeed(Number(e.target.value))}
+                      className='w-full'
+                    />
+                  </div>
+
+                  {swarmType === "boids" && (
+                    <>
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Separation Radius: {separationRadius}
+                        </label>
+                        <input
+                          type='range'
+                          min='10'
+                          max='100'
+                          value={separationRadius}
+                          onChange={(e) =>
+                            setSeparationRadius(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Alignment Weight: {alignmentWeight.toFixed(1)}
+                        </label>
+                        <input
+                          type='range'
+                          min='0'
+                          max='3'
+                          step='0.1'
+                          value={alignmentWeight}
+                          onChange={(e) =>
+                            setAlignmentWeight(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Cohesion Weight: {cohesionWeight.toFixed(1)}
+                        </label>
+                        <input
+                          type='range'
+                          min='0'
+                          max='3'
+                          step='0.1'
+                          value={cohesionWeight}
+                          onChange={(e) =>
+                            setCohesionWeight(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {swarmType === "ants" && (
+                    <>
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Pheromone Strength: {pheromoneStrength.toFixed(2)}
+                        </label>
+                        <input
+                          type='range'
+                          min='0.01'
+                          max='0.5'
+                          step='0.01'
+                          value={pheromoneStrength}
+                          onChange={(e) =>
+                            setPheromoneStrength(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Evaporation Rate: {pheromoneEvaporation.toFixed(3)}
+                        </label>
+                        <input
+                          type='range'
+                          min='0.980'
+                          max='0.999'
+                          step='0.001'
+                          value={pheromoneEvaporation}
+                          onChange={(e) =>
+                            setPheromoneEvaporation(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Sensor Angle: {antSensorAngle}°
+                        </label>
+                        <input
+                          type='range'
+                          min='15'
+                          max='90'
+                          value={antSensorAngle}
+                          onChange={(e) =>
+                            setAntSensorAngle(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {swarmType === "bees" && (
+                    <>
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Attractor Strength: {attractorStrength.toFixed(1)}
+                        </label>
+                        <input
+                          type='range'
+                          min='0.1'
+                          max='2'
+                          step='0.1'
+                          value={attractorStrength}
+                          onChange={(e) =>
+                            setAttractorStrength(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Noise Strength: {noiseStrength.toFixed(1)}
+                        </label>
+                        <input
+                          type='range'
+                          min='0'
+                          max='1'
+                          step='0.1'
+                          value={noiseStrength}
+                          onChange={(e) =>
+                            setNoiseStrength(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+
+                      <div className='mb-4'>
+                        <label className='block text-sm font-medium mb-2'>
+                          Follow Radius: {followRadius}
+                        </label>
+                        <input
+                          type='range'
+                          min='20'
+                          max='150'
+                          value={followRadius}
+                          onChange={(e) =>
+                            setFollowRadius(Number(e.target.value))
+                          }
+                          className='w-full'
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      ReactDOM.render(<SwarmSimulator />, document.getElementById("root"));
+    </script>
+  </body>
+</html>
