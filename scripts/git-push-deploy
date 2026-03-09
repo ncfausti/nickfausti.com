@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Git push wrapper that invalidates CloudFront after successful push
+# Usage: ./scripts/git-push-deploy [git push arguments]
+#
+# Examples:
+#   ./scripts/git-push-deploy
+#   ./scripts/git-push-deploy origin main
+#   ./scripts/git-push-deploy --force
+
+DISTRIBUTION_ID="E2DRBEYXQRKTEP"
+
+# Run git push with all provided arguments
+echo "📤 Pushing to remote..."
+git push "$@"
+
+# Check if push was successful
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "🚀 Invalidating CloudFront distribution..."
+    
+    aws cloudfront create-invalidation \
+        --distribution-id "$DISTRIBUTION_ID" \
+        --paths "/*" \
+        --output json
+    
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "✅ CloudFront invalidation created successfully!"
+        echo "   Distribution: $DISTRIBUTION_ID"
+        echo "   Domain: d32ws9qfl2o3zv.cloudfront.net"
+    else
+        echo ""
+        echo "❌ Failed to create CloudFront invalidation"
+        echo "   Make sure AWS CLI is configured with proper credentials"
+        exit 1
+    fi
+else
+    echo ""
+    echo "❌ Git push failed - skipping CloudFront invalidation"
+    exit 1
+fi
