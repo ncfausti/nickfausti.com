@@ -50,6 +50,117 @@
     /* .text-primary {
       color: #007bff !important;
     } */
+
+    /* Project Thumbnails */
+    .project-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .project-thumbnail {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+    .project-thumbnail:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    .project-content {
+      flex: 1;
+      padding-top: 4px;
+    }
+
+    /* Lightbox */
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    .lightbox-overlay.active {
+      display: flex;
+    }
+    .lightbox-img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      animation: lightbox-zoom 0.3s ease;
+    }
+    @keyframes lightbox-zoom {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 40px;
+      color: white;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .lightbox-close:hover {
+      opacity: 0.7;
+    }
+
+    /* Social Icon Colors */
+    .social-icons a.icon-pdf {
+      background-color: #c75b5b;
+    }
+    .social-icons a.icon-pdf:hover {
+      background-color: #a84444;
+    }
+    .social-icons a.icon-linkedin {
+      background-color: #5b7fa6;
+    }
+    .social-icons a.icon-linkedin:hover {
+      background-color: #486a8f;
+    }
+    .social-icons a.icon-github {
+      background-color: #6e6e6e;
+    }
+    .social-icons a.icon-github:hover {
+      background-color: #555555;
+    }
+    .social-icons a.icon-twitter {
+      background-color: #5a9ec7;
+    }
+    .social-icons a.icon-twitter:hover {
+      background-color: #4584ab;
+    }
+    .social-icons a.icon-facebook {
+      background-color: #5b6ea6;
+    }
+    .social-icons a.icon-facebook:hover {
+      background-color: #485a8f;
+    }
+    .social-icons a.icon-instagram {
+      background-color: #b07a9e;
+    }
+    .social-icons a.icon-instagram:hover {
+      background-color: #995f85;
+    }
   </style>
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8478675403552200"
@@ -109,28 +220,40 @@
         </div>
         <p class="lead mb-12">
           <strong>Current Projects:</strong>
-          <ul class="mb-8">
-            <li><a href="https://www.heylangley.com" target="_blank">Langley AI</a> Language learning partner w/ Speech-to-Text and TTS synthesis using LLMs</li>
-            <li><a href="https://bookcard.app" target="_blank">Bookcard</a> A social reading platform for book lovers. <a href="https://bookcard.app" target="_blank">Web</a> and <a href="https://apps.apple.com/us/app/bookcard-me/id6744308788">iOS</a></li>
-          </ul>
+          <div class="mt-3" style="margin-bottom: 2rem;">
+            <div class="project-item">
+              <img src="/langley-screen.png" alt="Langley AI Screenshot" class="project-thumbnail" onclick="openLightbox(this.src)">
+              <div class="project-content">
+                <a href="https://www.heylangley.com" target="_blank"><strong>Langley AI</strong></a><br>
+                Language learning partner w/ Speech-to-Text and TTS synthesis using LLMs
+              </div>
+            </div>
+            <div class="project-item">
+              <img src="/bookcard-screen.jpg" alt="Bookcard Screenshot" class="project-thumbnail" onclick="openLightbox(this.src)">
+              <div class="project-content">
+                <a href="https://bookcard.app" target="_blank"><strong>Bookcard</strong></a><br>
+                A social reading platform for book lovers. <a href="https://bookcard.app" target="_blank">Web</a> and <a href="https://apps.apple.com/us/app/bookcard-me/id6744308788">iOS</a>
+              </div>
+            </div>
+          </div>
         </p>
         <div class="social-icons">
-          <a href="http://nickfausti.com/nick-fausti-cv.pdf" target="_blank" alt="Resume/CV">
+          <a href="http://nickfausti.com/nick-fausti-cv.pdf" target="_blank" alt="Resume/CV" class="icon-pdf">
             <i class="fas fa-file-pdf" title="Resume/CV"></i>
          </a>
-          <a href="https://www.linkedin.com/pub/nick-fausti/15/b13/397" target="_blank" alt="LinkedIn Profile">
+          <a href="https://www.linkedin.com/pub/nick-fausti/15/b13/397" target="_blank" alt="LinkedIn Profile" class="icon-linkedin">
             <i class="fab fa-linkedin-in" title="LinkedIn Profile"></i>
           </a>
-          <a href="https://github.com/ncfausti?tab=activity" target="_blank" alt="GitHub Profile">
+          <a href="https://github.com/ncfausti?tab=activity" target="_blank" alt="GitHub Profile" class="icon-github">
             <i class="fab fa-github" title="GitHub Profile"></i>
           </a>
-          <a href="https://twitter.com/nickfausti" target="_blank" alt=" Twitter Profile">
+          <a href="https://twitter.com/nickfausti" target="_blank" alt=" Twitter Profile" class="icon-twitter">
             <i class="fab fa-twitter" title=" Twitter Profile"></i>
           </a>
-          <a href="https://www.facebook.com/fausti" target="_blank" alt="Facebook Profile">
+          <a href="https://www.facebook.com/fausti" target="_blank" alt="Facebook Profile" class="icon-facebook">
             <i class="fab fa-facebook-f" title="Facebook Profile"></i>
           </a>
-          <a href="http://instagram.com/nickfausti" target="_blank" alt="Instagram Profile">
+          <a href="http://instagram.com/nickfausti" target="_blank" alt="Instagram Profile" class="icon-instagram">
             <i class="fab fa-instagram" title="Instagram Profile"></i>
          </a>
         </div>
@@ -487,6 +610,12 @@
 
   </div>
 
+  <!-- Lightbox Overlay -->
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="Enlarged screenshot">
+  </div>
+
   <!-- Bootstrap core JavaScript -->
   <script src="/vendor/jquery/jquery.min.js"></script>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -496,6 +625,30 @@
 
   <!-- Custom scripts for this template -->
   <script src="/js/resume.min.js"></script>
+
+  <!-- Lightbox Script -->
+  <script>
+    function openLightbox(src) {
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      lightboxImg.src = src;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      const lightbox = document.getElementById('lightbox');
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeLightbox();
+      }
+    });
+  </script>
 
 </body>
 
