@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="nes">
 
 <head>
   <!-- Google tag (gtag.js) -->
@@ -28,6 +28,11 @@
   <link rel="stylesheet" href="https://use.typekit.net/gva2dge.css">
   <!-- Custom styles for this template -->
   <link href="/css/resume.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link href="/css/nes.css" rel="stylesheet">
+  <script>
+    try { if (localStorage.getItem('theme') === 'classic') document.documentElement.classList.remove('nes'); } catch (e) {}
+  </script>
 
   <style>
     .pubs-list li{
@@ -634,6 +639,7 @@
     <img class="lightbox-img" id="lightbox-img" src="" alt="Enlarged screenshot">
   </div>
 
+  <button class="nes-switch" id="nes-switch" type="button"></button>
   <!-- Bootstrap core JavaScript -->
   <script src="/vendor/jquery/jquery.min.js"></script>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -660,6 +666,18 @@
       document.body.style.overflow = '';
     }
 
+    // 8-bit / classic theme switch
+    (function () {
+      const root = document.documentElement;
+      const btn = document.getElementById('nes-switch');
+      const label = () => { btn.textContent = root.classList.contains('nes') ? 'CLASSIC' : '8-BIT'; };
+      btn.addEventListener('click', function () {
+        root.classList.toggle('nes');
+        try { localStorage.setItem('theme', root.classList.contains('nes') ? 'nes' : 'classic'); } catch (e) {}
+        label();
+      });
+      label();
+    })();
     // Close on Escape key
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {

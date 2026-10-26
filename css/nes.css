@@ -1,0 +1,259 @@
+/*
+ * 8-bit / NES theme. Everything is scoped to html.nes, so removing that
+ * class (or this stylesheet) brings back the original look.
+ *
+ * Colours are picked from the NES 2C02 palette.
+ */
+html.nes {
+  --nes-black: #000000;
+  --nes-ink: #0f0f1b;
+  --nes-white: #fcfcfc;
+  --nes-gray: #bcbcbc;
+  --nes-dim: #7c7c7c;
+  --nes-red: #f83800;
+  --nes-dark-red: #a81000;
+  --nes-yellow: #f8b800;
+  --nes-sky: #3cbcfc;
+  --nes-blue: #0058f8;
+  --nes-navy: #0000a8;
+  --nes-green: #00b800;
+  --nes-pink: #f878f8;
+  --nes-px: 4px;
+  --nes-display: 'Press Start 2P', monospace;
+  --nes-text: 'VT323', monospace;
+}
+
+html.nes body {
+  background: var(--nes-ink);
+  color: var(--nes-white);
+  font-family: var(--nes-text);
+  font-size: 1.4rem;
+  line-height: 1.35;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+/* CRT scanlines, very faint */
+html.nes body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10000;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, .18) 3px, rgba(0, 0, 0, 0) 4px);
+}
+
+html.nes ::selection { background: var(--nes-red); color: var(--nes-white); }
+
+/* ---------- type ---------- */
+
+html.nes h1, html.nes h2, html.nes h3, html.nes h4,
+html.nes h1 .henri-bold, html.nes .subheading {
+  font-family: var(--nes-display);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+html.nes h1 {
+  font-size: 3.25rem;
+  line-height: 1.3;
+  color: var(--nes-white);
+  text-shadow: var(--nes-px) var(--nes-px) 0 var(--nes-navy);
+}
+html.nes h1 .text-primary { text-shadow: var(--nes-px) var(--nes-px) 0 var(--nes-dark-red); }
+
+html.nes h2 {
+  font-size: 1.9rem;
+  line-height: 1.4;
+  color: var(--nes-yellow);
+  text-shadow: var(--nes-px) var(--nes-px) 0 var(--nes-dark-red);
+}
+html.nes h2::before, html.nes #sideNav .nav-link::before {
+  /* pixel cursor: a solid triangle, since the pixel fonts have no ▶ glyph */
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-left-color: var(--nes-red);
+}
+html.nes h2::before { border-width: .5em 0 .5em .5em; margin-right: .6em; vertical-align: -.05em; }
+
+html.nes h3 {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--nes-white);
+}
+
+html.nes .subheading {
+  font-size: .8rem;
+  line-height: 1.8;
+  color: var(--nes-sky);
+}
+
+html.nes p.lead { font-size: 1.5rem; }
+html.nes strong { font-weight: 400; color: var(--nes-yellow); }
+
+html.nes .text-primary { color: var(--nes-red) !important; }
+html.nes .resume-date .text-primary {
+  font-family: var(--nes-display);
+  font-size: .65rem;
+  line-height: 2;
+  color: var(--nes-green) !important;
+}
+
+html.nes a { color: var(--nes-sky); text-decoration: none; }
+html.nes a:hover, html.nes a:focus {
+  color: var(--nes-black);
+  background: var(--nes-sky);
+  text-decoration: none;
+}
+
+html.nes hr {
+  border: 0;
+  height: var(--nes-px);
+  background: repeating-linear-gradient(to right, var(--nes-dim) 0 var(--nes-px), transparent var(--nes-px) calc(var(--nes-px) * 2));
+}
+
+/* ---------- side nav ---------- */
+
+html.nes #sideNav {
+  background: var(--nes-black) !important;
+  box-shadow: inset calc(var(--nes-px) * -1) 0 0 var(--nes-white);
+}
+html.nes #sideNav .navbar-brand .henri-bold { font-family: var(--nes-display); font-size: .9rem; }
+
+html.nes #sideNav .navbar-brand .img-profile {
+  border-radius: 0 !important;
+  border: 0;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 var(--nes-px) var(--nes-black),
+    0 0 0 calc(var(--nes-px) * 2) var(--nes-white),
+    calc(var(--nes-px) * 3) calc(var(--nes-px) * 3) 0 calc(var(--nes-px) * 2) var(--nes-navy);
+}
+
+html.nes #sideNav .navbar-nav .nav-item .nav-link {
+  font-family: var(--nes-display);
+  font-weight: 400;
+  font-size: .7rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--nes-gray);
+}
+html.nes #sideNav .nav-link::before { border-width: .5em 0 .5em .5em; margin: 0 .6em 0 -1.1em; vertical-align: -.1em; visibility: hidden; }
+html.nes #sideNav .nav-link:hover,
+html.nes #sideNav .nav-link:focus,
+html.nes #sideNav .nav-link.active { color: var(--nes-white); background: none; }
+html.nes #sideNav .nav-link:hover::before,
+html.nes #sideNav .nav-link:focus::before,
+html.nes #sideNav .nav-link.active::before { visibility: visible; }
+html.nes #sideNav .nav-link.active::before { animation: nes-blink 1s steps(1) infinite; }
+
+html.nes #sideNav .navbar-toggler { border-radius: 0; border: var(--nes-px) solid var(--nes-white); }
+
+@keyframes nes-blink { 50% { opacity: 0; } }
+
+/* ---------- dialog boxes ---------- */
+
+/* NES-style box: square edges, notched corners, thick white line */
+html.nes .project-item {
+  background: var(--nes-black);
+  padding: 1rem;
+  margin: 0 var(--nes-px) 1.5rem;
+  box-shadow:
+    calc(var(--nes-px) * -1) 0 0 0 var(--nes-white),
+    var(--nes-px) 0 0 0 var(--nes-white),
+    0 calc(var(--nes-px) * -1) 0 0 var(--nes-white),
+    0 var(--nes-px) 0 0 var(--nes-white);
+}
+html.nes .project-content { font-size: 1.35rem; }
+
+html.nes .project-thumbnail {
+  border-radius: 0;
+  box-shadow: 0 0 0 var(--nes-px) var(--nes-dim);
+  transition: none;
+}
+html.nes .project-thumbnail:hover { transform: none; box-shadow: 0 0 0 var(--nes-px) var(--nes-yellow); }
+
+/* ---------- buttons ---------- */
+
+html.nes .social-icons a {
+  border-radius: 0;
+  line-height: 3.5rem;
+  transition: none;
+  box-shadow: inset calc(var(--nes-px) * -1) calc(var(--nes-px) * -1) 0 rgba(0, 0, 0, .45),
+              inset var(--nes-px) var(--nes-px) 0 rgba(255, 255, 255, .35);
+}
+html.nes .social-icons a:active { transform: translate(var(--nes-px), var(--nes-px)); box-shadow: inset var(--nes-px) var(--nes-px) 0 rgba(0, 0, 0, .45); }
+html.nes .social-icons a.icon-pdf { background: var(--nes-red); }
+html.nes .social-icons a.icon-linkedin { background: var(--nes-blue); }
+html.nes .social-icons a.icon-github { background: var(--nes-dim); }
+html.nes .social-icons a.icon-twitter { background: var(--nes-sky); }
+html.nes .social-icons a.icon-instagram { background: var(--nes-pink); }
+html.nes .social-icons a:hover { background: var(--nes-yellow); color: var(--nes-black) !important; }
+
+/* ---------- skills ---------- */
+
+html.nes .dev-icons .list-inline-item:nth-child(6n+1) { color: var(--nes-sky); }
+html.nes .dev-icons .list-inline-item:nth-child(6n+2) { color: var(--nes-yellow); }
+html.nes .dev-icons .list-inline-item:nth-child(6n+3) { color: var(--nes-red); }
+html.nes .dev-icons .list-inline-item:nth-child(6n+4) { color: var(--nes-green); }
+html.nes .dev-icons .list-inline-item:nth-child(6n+5) { color: var(--nes-blue); }
+html.nes .dev-icons .list-inline-item:nth-child(6n+6) { color: var(--nes-pink); }
+html.nes .dev-icons .list-inline-item i:hover { color: var(--nes-white); }
+
+html.nes .fa-ul .fa-check::before { content: '\2605'; font-family: var(--nes-text); font-weight: 400; color: var(--nes-yellow); }
+
+/* ---------- embeds ---------- */
+
+html.nes ig-album {
+  --iga-bg: transparent !important;
+  --iga-panel: var(--nes-black) !important;
+  --iga-fg: var(--nes-white) !important;
+  --iga-muted: var(--nes-gray) !important;
+  --iga-line: var(--nes-dim) !important;
+  --iga-tile: var(--nes-black) !important;
+  --iga-accent: var(--nes-sky) !important;
+  --iga-radius: 0 !important;
+  --iga-gap: 8px !important;
+  --iga-font: var(--nes-text) !important;
+  display: block;
+  font-size: 1.3rem;
+}
+
+html.nes .resume-section iframe { box-shadow: 0 0 0 var(--nes-px) var(--nes-dim); background: var(--nes-white); }
+
+html.nes .lightbox-img { border-radius: 0; box-shadow: 0 0 0 var(--nes-px) var(--nes-white); animation: none; }
+
+/* ---------- theme switch ---------- */
+
+.nes-switch {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10001;
+  padding: 8px 10px;
+  font: 10px/1 'Press Start 2P', monospace;
+  color: #fcfcfc;
+  background: #000;
+  border: 4px solid #fcfcfc;
+  cursor: pointer;
+}
+.nes-switch:hover, .nes-switch:focus { background: #f83800; outline: none; }
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 991px) {
+  html.nes #sideNav { box-shadow: inset 0 calc(var(--nes-px) * -1) 0 var(--nes-white); }
+  html.nes h1 { font-size: 2rem; }
+  html.nes h2 { font-size: 1.3rem; }
+  html.nes h3 { font-size: .85rem; }
+  html.nes .resume-date .text-primary { font-size: .6rem; }
+}
+@media (max-width: 575px) {
+  html.nes h1 { font-size: 1.6rem; }
+  html.nes .project-item { flex-direction: column; }
+  html.nes .project-thumbnail { margin: 0 0 1rem; }
+}
