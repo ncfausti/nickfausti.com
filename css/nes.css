@@ -168,7 +168,7 @@ html.nes .project-item {
     0 calc(var(--nes-px) * -1) 0 0 var(--nes-white),
     0 var(--nes-px) 0 0 var(--nes-white);
 }
-html.nes .project-content { font-size: 1.35rem; }
+html.nes .project-content { font-size: 1.35rem; margin-top: calc(var(--nes-px) * -1); /* level with the thumbnail's frame */ }
 
 html.nes .project-thumbnail {
   border-radius: 0;
@@ -256,4 +256,8 @@ html.nes .lightbox-img { border-radius: 0; box-shadow: 0 0 0 var(--nes-px) var(-
   html.nes h1 { font-size: 1.6rem; }
   html.nes .project-item { flex-direction: column; }
   html.nes .project-thumbnail { margin: 0 0 1rem; }
+  html.nes .project-content { margin-top: 0; }
+  /* fit "University of Pennsylvania" on one line beside its shield */
+  html.nes #education .resume-content h3,
+  html.nes #education .resume-content .subheading { font-size: .6rem; }
 }

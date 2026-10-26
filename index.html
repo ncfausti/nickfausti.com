@@ -87,7 +87,13 @@
     }
     .project-content {
       flex: 1;
-      padding-top: 4px;
+      /* start the text at the top of the project name's capitals, level with the thumbnail */
+      text-box: trim-start cap alphabetic;
+    }
+    @media (max-width: 575px) {
+      #education .resume-content h3 {
+        font-size: 1.5rem;
+      }
     }
 
     /* Lightbox */
