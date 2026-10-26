@@ -77,6 +77,14 @@
       transform: scale(1.05);
       box-shadow: 0 4px 16px rgba(0,0,0,0.25);
     }
+    .school-shield {
+      /* same box for every shield so the school names line up */
+      height: 5rem;
+      width: 4.5rem;
+      object-fit: contain;
+      margin-right: 1.25rem;
+      flex-shrink: 0;
+    }
     .project-content {
       flex: 1;
       padding-top: 4px;
@@ -461,11 +469,13 @@
         <h2 class="mb-5">Education</h2>
 
         <div class="resume-item d-flex flex-column flex-md-row justify-content-between mb-5">
-          <div class="resume-content">
+          <div class="resume-content d-flex align-items-center">
+            <img class="school-shield" src="/img/shield-penn.png" alt="University of Pennsylvania shield">
+            <div>
             <h3 class="mb-0">University of Pennsylvania</h3>
             <div class="subheading mb-3">Master of Science in Engineering</div>
             <div>Computer and Information Science</div>
-            
+            </div>
           </div>
           <div class="resume-date text-md-right">
             <span class="text-primary"></span>
@@ -473,10 +483,13 @@
         </div>
 
         <div class="resume-item d-flex flex-column flex-md-row justify-content-between">
-          <div class="resume-content">
-            <h3 class="mb-0">Rutgers University - New Brunswick</h3>
+          <div class="resume-content d-flex align-items-center">
+            <img class="school-shield" src="/img/shield-rutgers.png" alt="Rutgers University shield">
+            <div>
+            <h3 class="mb-0">Rutgers University</h3>
             <div class="subheading mb-3">Bachelor of Arts</div>
             <div>Information Technology & Informatics; Economics</div>
+            </div>
           </div>
           <div class="resume-date text-md-right">
             <span class="text-primary"></span>
@@ -567,7 +580,7 @@
             </p>
             
             <p>
-            I enjoy spending as much time in nature as possible and also love photography.
+            I love spending time in nature and also love photography.
             Here are a few recent ones; the full album is at <a href="https://photos.nickfausti.com/">photos.nickfausti.com</a>,
             or check out my Instagram <a href="https://instagram.com/nickfausti" target="_blank">here</a>.
             </p>
